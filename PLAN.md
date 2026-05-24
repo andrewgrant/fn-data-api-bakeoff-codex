@@ -25,11 +25,23 @@ Fortnite.GG feature findings to emulate where possible:
 - Creator pages with aggregate current players, minutes played, followers/favorites, map list, charts, and update history.
 - Island detail pages with metadata, tags, player-count chart, 24h overview, total playtime, sessions, recommendations, retention, and platform-share style contextual metrics.
 
+Feature parity and limits:
+
+| Fortnite.GG feature | Implementation target | Limit / note |
+| --- | --- | --- |
+| Players Now | Use latest 10-minute `peakCCU` as current activity proxy | Not truly live CCU; observed by ingestion only. |
+| All-time peak | Track `observed_all_time_peak` from stored metric points | Cannot know peaks before local ingestion except Epic's current 7-day window. |
+| 24h plays, players, favorites, recommends, avg playtime, retention | Use day interval metrics from Epic API | Nulls are expected below API privacy thresholds and sort last. |
+| Minutes played | Sum stored day metrics and expose latest 24h | Long-term totals only accrue after local ingestion. |
+| Release/publish date, version, max players, XP status, age rating, description, screenshots | Link out to Fortnite/Fortnite.GG when unavailable | Official Data API metadata does not expose these fields. |
+| Creator followers and total favorites | Show local aggregates from creator islands | Fortnite.GG follower counts are not exposed by the official API. |
+| Earnings, discovery/homebar time, platform share, update history | Out of scope unless another public source becomes available | Mark as unavailable in UI copy/API metadata. |
+
 ## Product Scope
 
 Build a local and Docker-deployable app named `Island Intel` with:
 
-- Rankings page for islands with search, tag filter, creator filter, sort selection, and metric range filters.
+- Rankings page for the locally ingested island corpus with search, tag filter, creator filter, sort selection, pagination, and metric range filters.
 - Island detail page with metadata, current 10-minute/hour/day summaries, charts, and external Fortnite/Fortnite.GG links.
 - Creator view with aggregate metrics and creator map rankings.
 - Backend ingestion service that periodically fetches Epic island metadata and metrics, stores them in SQLite, and keeps historical snapshots beyond Epic's short window.
@@ -40,29 +52,34 @@ Build a local and Docker-deployable app named `Island Intel` with:
 ## Architecture
 
 - Monorepo with npm workspaces.
+- Runtime: Node 24+ locally and in Docker because the backend uses built-in `node:sqlite`; pin with `.nvmrc`, `engines`, and `node:24` images.
 - Backend: Node.js + TypeScript, Express, built-in `node:sqlite`, no authentication required for Epic API.
 - Frontend: Vite + React + TypeScript, Recharts for charts, Lucide icons for controls.
-- Storage: SQLite database under `data/islands.db`, mounted as a Docker volume.
-- Ingestion: background scheduler in the API process plus `npm run ingest` for one-shot runs.
+- Storage: SQLite database under `data/islands.db`, mounted as a Docker volume with writable permissions for the backend container user.
+- Ingestion: background scheduler in the API process plus `npm run ingest` for one-shot runs; separate metadata crawl and metric refresh cadence.
+- Ingestion controls: cursor pagination via `after`/`before` and `size`, configurable max corpus size, retry/backoff on `429`, request timeouts, concurrency cap, stale-data marking, raw payload/error capture, and ingestion watermarks.
+- Ranking semantics: all backend rankings are rankings over data already ingested locally. The Epic API has no global metric-sorted ranking endpoint, so wider rankings require crawling metadata and fetching metrics per island under rate limits.
 - Data model:
   - `islands`: island metadata and tags.
-  - `metric_points`: per-island metric time series by interval.
-  - `retention_points`: D1/D7 retention by day interval.
-  - `ingestion_runs`: operational history.
+  - `metric_points`: per-island metric time series by interval with unique `(island_code, interval, metric, timestamp)` and support for null values.
+  - `retention_points`: D1/D7 retention by day interval with unique `(island_code, interval, timestamp)` and support for null values.
+  - `ingestion_runs`: operational history, status, raw errors, and high-level counts.
+  - `island_observations`: latest derived fields such as latest CCU proxy, observed all-time peak, latest 24h metrics, and stale state.
   - `curated_seed_islands`: known-active island codes collected during research.
+- API query conventions: list routes accept `page`, `pageSize`, `sort`, `direction`, `search`, `tag`, `creator`, metric min/max ranges, and `lastUpdated` filters; null metric values sort last.
 
 ## Phases
 
 ### Phase 0: Repo Baseline
 
 - [x] Initialize Git repository and remote.
-- [ ] Commit the received instructions and plan baseline.
+- [x] Commit the received instructions and plan baseline.
 
 ### Phase 1: Planning Review
 
-- [ ] Have a second agent review this plan.
-- [ ] Apply appropriate review changes.
-- [ ] Mark Phase 1 complete after review is incorporated.
+- [x] Have a second agent review this plan.
+- [x] Apply appropriate review changes.
+- [x] Mark Phase 1 complete after review is incorporated.
 
 ### Phase 2: Backend Service
 
@@ -97,6 +114,7 @@ Build a local and Docker-deployable app named `Island Intel` with:
 
 - [ ] Add root scripts for install, dev, build, test, ingest, and lint/typecheck.
 - [ ] Add Dockerfiles and Docker Compose for API and frontend with ports `3201` and `3200`.
+- [ ] Add frontend API base URL env handling, backend CORS for `localhost:3200`, container healthchecks, persistent SQLite volume, and image build/tag instructions.
 - [ ] Add `.env.example` and README with local/Docker instructions.
 - [ ] Commit operations milestone.
 
@@ -105,7 +123,8 @@ Build a local and Docker-deployable app named `Island Intel` with:
 - [ ] Run install, typecheck, tests, and builds.
 - [ ] Run local API and frontend on ports `3201` and `3200`.
 - [ ] Trigger a small ingestion run against the live Epic API.
-- [ ] Verify UI through the browser at desktop and mobile sizes.
+- [ ] Verify API handles empty DB startup, live API 404/400/429 paths, interval metric availability differences, and Docker Compose boot.
+- [ ] Verify UI through the browser at desktop and mobile sizes against local services and, if practical, Docker services.
 - [ ] Fix issues discovered during verification.
 - [ ] Mark all phases complete and commit final state.
 
