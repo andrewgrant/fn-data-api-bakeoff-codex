@@ -21,7 +21,7 @@ Useful commands:
 npm run typecheck
 npm test
 npm run build
-npm run ingest -- --seeds --max-islands 100 --concurrency 4
+npm run ingest -- --seeds --max-islands 100 --concurrency 1
 ```
 
 The SQLite database is stored at `data/islands.db` by default. Set `DB_PATH` to override it.

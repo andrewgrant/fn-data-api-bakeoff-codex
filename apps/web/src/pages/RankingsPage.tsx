@@ -82,7 +82,7 @@ export default function RankingsPage() {
     try {
       const result = await apiPost<IngestionSummary>("/api/ingestion/run", {
         maxIslands: 25,
-        concurrency: 4,
+        concurrency: 1,
         seeds: true,
         metadata: true,
         metrics: true

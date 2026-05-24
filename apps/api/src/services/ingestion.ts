@@ -55,16 +55,30 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function withRetry<T>(operation: () => Promise<T>, retries = 2): Promise<T> {
+let requestQueue = Promise.resolve();
+
+async function rateLimit(): Promise<void> {
+  const previous = requestQueue;
+  let release!: () => void;
+  requestQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await previous;
+  await sleep(200);
+  release();
+}
+
+async function withRetry<T>(operation: () => Promise<T>, retries = 4): Promise<T> {
   let attempt = 0;
   for (;;) {
     try {
+      await rateLimit();
       return await operation();
     } catch (error) {
       if (!(error instanceof EpicApiError) || error.statusCode !== 429 || attempt >= retries) {
         throw error;
       }
-      const backoff = error.retryAfterMs ?? 1000 * 2 ** attempt;
+      const backoff = error.retryAfterMs ?? 2000 * 2 ** attempt;
       await sleep(backoff);
       attempt += 1;
     }
@@ -239,7 +253,7 @@ export const defaultIngestionOptions: IngestionOptions = {
   seeds: true,
   maxIslands: 25,
   intervals: ["minute", "hour", "day"],
-  concurrency: 4,
+  concurrency: 1,
   metadata: true,
   metrics: true
 };

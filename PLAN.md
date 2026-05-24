@@ -116,17 +116,17 @@ Build a local and Docker-deployable app named `Island Intel` with:
 - [x] Add Dockerfiles and Docker Compose for API and frontend with ports `3201` and `3200`.
 - [x] Add frontend API base URL env handling, backend CORS for `localhost:3200`, container healthchecks, persistent SQLite volume, and image build/tag instructions.
 - [x] Add `.env.example` and README with local/Docker instructions.
-- [ ] Commit operations milestone.
+- [x] Commit operations milestone.
 
 ### Phase 5: Verification and Polish
 
-- [ ] Run install, typecheck, tests, and builds.
-- [ ] Run local API and frontend on ports `3201` and `3200`.
-- [ ] Trigger a small ingestion run against the live Epic API.
-- [ ] Verify API handles empty DB startup, live API 404/400/429 paths, interval metric availability differences, and Docker Compose boot.
-- [ ] Verify UI through the browser at desktop and mobile sizes against local services and, if practical, Docker services.
-- [ ] Fix issues discovered during verification.
-- [ ] Mark all phases complete and commit final state.
+- [x] Run install, typecheck, tests, and builds.
+- [x] Run local API and frontend on ports `3201` and `3200`.
+- [x] Trigger a small ingestion run against the live Epic API.
+- [x] Verify API handles empty DB startup, live API 404/400/429 paths, interval metric availability differences, and Docker Compose boot.
+- [x] Verify UI through the browser at desktop and mobile sizes against local services and Docker services.
+- [x] Fix issues discovered during verification.
+- [x] Mark all phases complete and commit final state.
 
 ## Acceptance Criteria
 
