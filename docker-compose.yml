@@ -1,0 +1,52 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: fn-data-api-bakeoff-codex-api:latest
+    environment:
+      PORT: "3201"
+      CORS_ORIGIN: "http://localhost:3200"
+      DB_PATH: "/app/data/islands.db"
+      INGEST_ON_START: "true"
+      INGEST_MAX_ISLANDS: "25"
+      INGEST_INTERVAL_MINUTES: "30"
+      METADATA_CRAWL_INTERVAL_MINUTES: "360"
+    ports:
+      - "3201:3201"
+    volumes:
+      - island-data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3201/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_BASE_URL: "http://localhost:3201"
+    image: fn-data-api-bakeoff-codex-web:latest
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3200:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  island-data:

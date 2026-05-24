@@ -83,11 +83,11 @@ Build a local and Docker-deployable app named `Island Intel` with:
 
 ### Phase 2: Backend Service
 
-- [ ] Create API workspace, TypeScript config, and scripts.
-- [ ] Implement SQLite schema, migrations, and repository queries.
-- [ ] Implement Epic API client with pagination, metric filters, timeouts, and rate-conscious concurrency.
-- [ ] Implement ingestion service for seed islands plus configurable metadata crawl.
-- [ ] Implement Express routes:
+- [x] Create API workspace, TypeScript config, and scripts.
+- [x] Implement SQLite schema, migrations, and repository queries.
+- [x] Implement Epic API client with pagination, metric filters, timeouts, and rate-conscious concurrency.
+- [x] Implement ingestion service for seed islands plus configurable metadata crawl.
+- [x] Implement Express routes:
   - `GET /api/health`
   - `GET /api/rankings`
   - `GET /api/islands/:code`
@@ -97,25 +97,25 @@ Build a local and Docker-deployable app named `Island Intel` with:
   - `GET /api/tags`
   - `GET /api/ingestion/runs`
   - `POST /api/ingestion/run`
-- [ ] Add backend tests for normalization, ranking queries, and route smoke coverage.
-- [ ] Commit backend milestone.
+- [x] Add backend tests for normalization, ranking queries, and route smoke coverage.
+- [x] Commit backend milestone.
 
 ### Phase 3: Frontend App
 
-- [ ] Create Vite React workspace.
-- [ ] Build rankings dashboard with filters, metric cards, sortable table, and responsive island cards.
-- [ ] Build island detail view with charts and 24h/day summaries.
-- [ ] Build creator view with aggregate metrics and creator map list.
-- [ ] Add loading, empty, and error states.
-- [ ] Ensure the design is dense, scan-friendly, and not a marketing landing page.
-- [ ] Commit frontend milestone.
+- [x] Create Vite React workspace.
+- [x] Build rankings dashboard with filters, metric cards, sortable table, and responsive island cards.
+- [x] Build island detail view with charts and 24h/day summaries.
+- [x] Build creator view with aggregate metrics and creator map list.
+- [x] Add loading, empty, and error states.
+- [x] Ensure the design is dense, scan-friendly, and not a marketing landing page.
+- [x] Commit frontend milestone.
 
 ### Phase 4: Docker and Local Operations
 
-- [ ] Add root scripts for install, dev, build, test, ingest, and lint/typecheck.
-- [ ] Add Dockerfiles and Docker Compose for API and frontend with ports `3201` and `3200`.
-- [ ] Add frontend API base URL env handling, backend CORS for `localhost:3200`, container healthchecks, persistent SQLite volume, and image build/tag instructions.
-- [ ] Add `.env.example` and README with local/Docker instructions.
+- [x] Add root scripts for install, dev, build, test, ingest, and lint/typecheck.
+- [x] Add Dockerfiles and Docker Compose for API and frontend with ports `3201` and `3200`.
+- [x] Add frontend API base URL env handling, backend CORS for `localhost:3200`, container healthchecks, persistent SQLite volume, and image build/tag instructions.
+- [x] Add `.env.example` and README with local/Docker instructions.
 - [ ] Commit operations milestone.
 
 ### Phase 5: Verification and Polish
