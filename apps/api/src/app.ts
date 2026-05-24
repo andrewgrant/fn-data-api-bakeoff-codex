@@ -106,9 +106,21 @@ export function createApp(db: Database) {
   app.post(
     "/api/ingestion/run",
     asyncRoute(async (request, response) => {
+      const legacyMax = toInteger(request.body?.maxIslands, 0, 0, 10000);
       const summary = await ingestionService.run({
         ...defaultIngestionOptions,
-        maxIslands: toInteger(request.body?.maxIslands, defaultIngestionOptions.maxIslands, 0, 1000),
+        metadataLimit: toInteger(
+          request.body?.metadataLimit,
+          legacyMax || defaultIngestionOptions.metadataLimit,
+          0,
+          10000
+        ),
+        metricsLimit: toInteger(
+          request.body?.metricsLimit,
+          legacyMax || defaultIngestionOptions.metricsLimit,
+          0,
+          2000
+        ),
         concurrency: toInteger(request.body?.concurrency, defaultIngestionOptions.concurrency, 1, 8),
         seeds: request.body?.seeds ?? defaultIngestionOptions.seeds,
         metadata: request.body?.metadata ?? defaultIngestionOptions.metadata,

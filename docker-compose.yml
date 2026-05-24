@@ -9,7 +9,8 @@ services:
       CORS_ORIGIN: "http://localhost:3200"
       DB_PATH: "/app/data/islands.db"
       INGEST_ON_START: "true"
-      INGEST_MAX_ISLANDS: "25"
+      INGEST_METADATA_LIMIT: "1000"
+      INGEST_METRICS_LIMIT: "25"
       INGEST_INTERVAL_MINUTES: "30"
       METADATA_CRAWL_INTERVAL_MINUTES: "360"
     ports:

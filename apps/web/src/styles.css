@@ -150,6 +150,7 @@ main {
 }
 
 .primary-action,
+.secondary-action,
 .external-actions a,
 .pagination button {
   display: inline-flex;
@@ -163,6 +164,19 @@ main {
   border: 1px solid #0f766e;
   border-radius: 8px;
   font-weight: 700;
+}
+
+.secondary-action {
+  color: #17211c;
+  background: #ffffff;
+  border-color: #d6d2c7;
+}
+
+.heading-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .stats-grid {

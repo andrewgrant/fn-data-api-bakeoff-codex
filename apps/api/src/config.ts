@@ -24,7 +24,8 @@ export const config = {
   epicBaseUrl: process.env.EPIC_API_BASE_URL ?? "https://api.fortnite.com/ecosystem/v1",
   requestTimeoutMs: integerEnv("REQUEST_TIMEOUT_MS", 15000),
   ingestOnStart: booleanEnv("INGEST_ON_START", false),
-  ingestMaxIslands: integerEnv("INGEST_MAX_ISLANDS", 25),
+  ingestMetadataLimit: integerEnv("INGEST_METADATA_LIMIT", integerEnv("INGEST_MAX_ISLANDS", 1000)),
+  ingestMetricsLimit: integerEnv("INGEST_METRICS_LIMIT", integerEnv("INGEST_MAX_ISLANDS", 25)),
   ingestIntervalMinutes: integerEnv("INGEST_INTERVAL_MINUTES", 30),
   metadataCrawlIntervalMinutes: integerEnv("METADATA_CRAWL_INTERVAL_MINUTES", 360)
 };

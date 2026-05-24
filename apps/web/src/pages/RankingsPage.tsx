@@ -76,12 +76,13 @@ export default function RankingsPage() {
     };
   }, [rankings]);
 
-  async function runRefresh() {
+  async function runRefresh(mode: "quick" | "expand") {
     setRefreshing(true);
     setRefreshResult(null);
     try {
       const result = await apiPost<IngestionSummary>("/api/ingestion/run", {
-        maxIslands: 25,
+        metadataLimit: mode === "expand" ? 1000 : 250,
+        metricsLimit: mode === "expand" ? 25 : 25,
         concurrency: 1,
         seeds: true,
         metadata: true,
@@ -107,10 +108,16 @@ export default function RankingsPage() {
           <p className="eyebrow">Local corpus</p>
           <h1>Island rankings</h1>
         </div>
-        <button className="primary-action" onClick={runRefresh} disabled={refreshing} title="Run ingestion">
-          <RefreshCw size={17} className={refreshing ? "spin" : ""} />
-          Refresh data
-        </button>
+        <div className="heading-actions">
+          <button className="secondary-action" onClick={() => runRefresh("quick")} disabled={refreshing} title="Refresh recent metrics">
+            <RefreshCw size={17} className={refreshing ? "spin" : ""} />
+            Refresh
+          </button>
+          <button className="primary-action" onClick={() => runRefresh("expand")} disabled={refreshing} title="Expand island corpus">
+            <Database size={17} />
+            Expand corpus
+          </button>
+        </div>
       </div>
 
       <div className="stats-grid">

@@ -8,7 +8,7 @@ Use Node 24+.
 
 ```bash
 npm install
-npm run ingest -- --seeds --max-islands 25
+npm run ingest -- --seeds --metadata-limit 1000 --metrics-limit 25
 npm run dev
 ```
 
@@ -21,7 +21,7 @@ Useful commands:
 npm run typecheck
 npm test
 npm run build
-npm run ingest -- --seeds --max-islands 100 --concurrency 1
+npm run ingest -- --seeds --metadata-limit 2500 --metrics-limit 75 --concurrency 1
 ```
 
 The SQLite database is stored at `data/islands.db` by default. Set `DB_PATH` to override it.
@@ -42,7 +42,7 @@ Ports:
 - Frontend: http://localhost:3200
 - Backend: http://localhost:3201
 
-The API container stores SQLite data in the `island-data` volume and runs a seed ingestion on startup. To build images without starting services:
+The API container stores SQLite data in the `island-data` volume and runs a metadata crawl plus paced metric backfill on startup. To build images without starting services:
 
 ```bash
 docker compose build
@@ -50,7 +50,7 @@ docker compose build
 
 ## API Notes
 
-Rankings are over the locally ingested corpus. Epic exposes island metadata and per-island metrics, but not a global metric-sorted rankings endpoint. Longer history starts accruing after the backend has been running because Epic's public API history is short.
+Rankings are over the locally ingested corpus. Epic exposes island metadata and per-island metrics, but not a global metric-sorted rankings endpoint. The crawler therefore keeps metadata discovery broad and metric refresh/backfill paced to avoid API rate limits. Longer history starts accruing after the backend has been running because Epic's public API history is short.
 
 Metrics used:
 

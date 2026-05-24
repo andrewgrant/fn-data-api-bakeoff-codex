@@ -72,7 +72,8 @@ export interface RankingQuery {
 
 export interface IngestionOptions {
   seeds: boolean;
-  maxIslands: number;
+  metadataLimit: number;
+  metricsLimit: number;
   intervals: MetricInterval[];
   concurrency: number;
   metadata: boolean;

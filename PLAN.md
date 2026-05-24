@@ -128,6 +128,13 @@ Build a local and Docker-deployable app named `Island Intel` with:
 - [x] Fix issues discovered during verification.
 - [x] Mark all phases complete and commit final state.
 
+### Phase 6: Expanded Corpus Backfill
+
+- [x] Split ingestion limits into broad metadata discovery and paced metric backfill.
+- [x] Increase local/Docker defaults from a tiny seed crawl to a 1,000-island metadata corpus and conservative 25-island metric refresh.
+- [x] Add UI controls for quick refresh and larger corpus expansion.
+- [x] Preserve `--max-islands` as a compatibility alias while documenting `--metadata-limit` and `--metrics-limit`.
+
 ## Acceptance Criteria
 
 - `npm install`, `npm run build`, and `npm test` pass.

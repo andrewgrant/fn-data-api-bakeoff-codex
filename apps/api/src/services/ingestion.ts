@@ -64,11 +64,11 @@ async function rateLimit(): Promise<void> {
     release = resolve;
   });
   await previous;
-  await sleep(200);
+  await sleep(1000);
   release();
 }
 
-async function withRetry<T>(operation: () => Promise<T>, retries = 4): Promise<T> {
+async function withRetry<T>(operation: () => Promise<T>, retries = 1): Promise<T> {
   let attempt = 0;
   for (;;) {
     try {
@@ -108,31 +108,32 @@ export class IngestionService {
 
   async run(options: IngestionOptions): Promise<IngestionSummary> {
     seedCuratedIslands(this.db);
-    const runId = createIngestionRun(this.db, this.describeMode(options), options.maxIslands);
+    const runId = createIngestionRun(this.db, this.describeMode(options), options.metadataLimit);
     const errors: ErrorRecord[] = [];
     let metadataCount = 0;
     let metricPointCount = 0;
     const codes = new Set<string>();
+    const seedCodes = listSeedCodes(this.db);
 
     try {
       if (options.seeds) {
-        for (const code of listSeedCodes(this.db)) {
+        for (const code of seedCodes) {
           codes.add(code);
         }
       }
 
       if (options.metadata) {
-        metadataCount += await this.fetchSeedMetadata([...codes], runId, errors);
-        const crawled = await this.crawlMetadata(options.maxIslands, runId, errors);
+        metadataCount += await this.fetchSeedMetadata(options.seeds ? seedCodes : [], runId, errors);
+        const crawled = await this.crawlMetadata(options.metadataLimit, runId, errors);
         metadataCount += crawled.count;
         for (const code of crawled.codes) codes.add(code);
       }
 
       if (options.metrics) {
         if (!options.metadata) {
-          for (const code of listKnownIslandCodes(this.db, options.maxIslands || 500)) codes.add(code);
+          for (const code of listKnownIslandCodes(this.db, options.metricsLimit || 500)) codes.add(code);
         }
-        const targets = [...codes].slice(0, Math.max(options.maxIslands, codes.size));
+        const targets = this.metricTargets(seedCodes, [...codes], options.metricsLimit);
         metricPointCount += await this.fetchMetrics(targets, options.intervals, options.concurrency, runId, errors);
       }
 
@@ -162,9 +163,17 @@ export class IngestionService {
   private describeMode(options: IngestionOptions): string {
     const parts = [];
     if (options.seeds) parts.push("seeds");
-    if (options.metadata) parts.push("metadata");
-    if (options.metrics) parts.push(`metrics:${options.intervals.join(",")}`);
+    if (options.metadata) parts.push(`metadata:${options.metadataLimit}`);
+    if (options.metrics) parts.push(`metrics:${options.metricsLimit}:${options.intervals.join(",")}`);
     return parts.join("+") || "noop";
+  }
+
+  private metricTargets(seedCodes: string[], candidates: string[], limit: number): string[] {
+    const ordered = new Set<string>();
+    for (const code of seedCodes) ordered.add(code);
+    for (const code of listKnownIslandCodes(this.db, limit)) ordered.add(code);
+    for (const code of candidates) ordered.add(code);
+    return [...ordered].slice(0, limit);
   }
 
   private async fetchSeedMetadata(codes: string[], runId: number, errors: ErrorRecord[]): Promise<number> {
@@ -175,6 +184,7 @@ export class IngestionService {
         upsertIsland(this.db, island);
         count += 1;
       } catch (error) {
+        if (this.deferredRateLimit(error)) continue;
         this.captureError(runId, errors, error, code);
       }
     }
@@ -201,6 +211,9 @@ export class IngestionService {
         after = page.meta.page.nextCursor ?? undefined;
         if (!after || page.data.length === 0) break;
       } catch (error) {
+        if (this.deferredRateLimit(error)) {
+          break;
+        }
         this.captureError(runId, errors, error);
         break;
       }
@@ -222,6 +235,7 @@ export class IngestionService {
           const metrics = await withRetry(() => this.client.getMetrics(code, interval, metricSets[interval]));
           metricPointCount += upsertMetrics(this.db, code, interval, metrics);
         } catch (error) {
+          if (this.deferredRateLimit(error)) continue;
           this.captureError(runId, errors, error, code);
         }
       }
@@ -247,11 +261,16 @@ export class IngestionService {
     errors.push(record);
     addIngestionError(this.db, runId, record);
   }
+
+  private deferredRateLimit(error: unknown): boolean {
+    return error instanceof EpicApiError && error.statusCode === 429;
+  }
 }
 
 export const defaultIngestionOptions: IngestionOptions = {
   seeds: true,
-  maxIslands: 25,
+  metadataLimit: 1000,
+  metricsLimit: 25,
   intervals: ["minute", "hour", "day"],
   concurrency: 1,
   metadata: true,

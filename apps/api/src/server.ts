@@ -22,7 +22,8 @@ if (config.ingestOnStart) {
   ingestion
     .run({
       ...defaultIngestionOptions,
-      maxIslands: config.ingestMaxIslands
+      metadataLimit: config.ingestMetadataLimit,
+      metricsLimit: config.ingestMetricsLimit
     })
     .then((summary) => console.log("Startup ingestion finished", summary))
     .catch((error) => console.error("Startup ingestion failed", error));
@@ -33,7 +34,8 @@ if (config.ingestOnStart) {
         .run({
           ...defaultIngestionOptions,
           metadata: false,
-          maxIslands: config.ingestMaxIslands
+          metadataLimit: config.ingestMetadataLimit,
+          metricsLimit: config.ingestMetricsLimit
         })
         .catch((error) => console.error("Scheduled metrics ingestion failed", error));
     },
@@ -45,7 +47,8 @@ if (config.ingestOnStart) {
       ingestion
         .run({
           ...defaultIngestionOptions,
-          maxIslands: config.ingestMaxIslands
+          metadataLimit: config.ingestMetadataLimit,
+          metricsLimit: config.ingestMetricsLimit
         })
         .catch((error) => console.error("Scheduled metadata ingestion failed", error));
     },

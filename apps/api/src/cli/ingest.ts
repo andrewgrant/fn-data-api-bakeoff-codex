@@ -16,7 +16,15 @@ function hasFlag(name: string): boolean {
   return process.argv.includes(`--${name}`);
 }
 
-const maxIslands = Number.parseInt(argValue("max-islands") ?? String(defaultIngestionOptions.maxIslands), 10);
+const legacyMax = argValue("max-islands");
+const metadataLimit = Number.parseInt(
+  argValue("metadata-limit") ?? legacyMax ?? String(defaultIngestionOptions.metadataLimit),
+  10
+);
+const metricsLimit = Number.parseInt(
+  argValue("metrics-limit") ?? legacyMax ?? String(defaultIngestionOptions.metricsLimit),
+  10
+);
 const concurrency = Number.parseInt(argValue("concurrency") ?? String(defaultIngestionOptions.concurrency), 10);
 const intervals = (argValue("intervals") ?? "minute,hour,day")
   .split(",")
@@ -36,7 +44,8 @@ const summary = await ingestion.run({
   seeds: hasFlag("seeds") || !hasFlag("no-seeds"),
   metadata: !hasFlag("no-metadata"),
   metrics: !hasFlag("no-metrics"),
-  maxIslands: Number.isFinite(maxIslands) ? maxIslands : defaultIngestionOptions.maxIslands,
+  metadataLimit: Number.isFinite(metadataLimit) ? metadataLimit : defaultIngestionOptions.metadataLimit,
+  metricsLimit: Number.isFinite(metricsLimit) ? metricsLimit : defaultIngestionOptions.metricsLimit,
   concurrency: Number.isFinite(concurrency) ? concurrency : defaultIngestionOptions.concurrency,
   intervals: intervals.length ? intervals : defaultIngestionOptions.intervals
 });
