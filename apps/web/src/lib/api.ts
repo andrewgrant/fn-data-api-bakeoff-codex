@@ -1,4 +1,7 @@
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3201").replace(/\/$/, "");
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "http://localhost:3201" : "")).replace(
+  /\/$/,
+  ""
+);
 
 export interface ObservationMetrics {
   latestPeakCcu: number | null;

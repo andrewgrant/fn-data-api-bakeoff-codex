@@ -48,6 +48,19 @@ The API container stores SQLite data in the `island-data` volume and runs a meta
 docker compose build
 ```
 
+## Single-Service Deploys
+
+Railpack/Railway-style root deployments can run the app as one Node service:
+
+```bash
+npm run build
+npm start
+```
+
+The root `start` script launches the API, and the API serves the built React files from `apps/web/dist`. In production the frontend uses same-origin `/api` requests unless `VITE_API_BASE_URL` is explicitly set.
+
+By default, `NODE_ENV=production` starts a background ingestion run. Set `INGEST_ON_START=false` to disable that, or tune `INGEST_METADATA_LIMIT` and `INGEST_METRICS_LIMIT` for your host.
+
 ## API Notes
 
 Rankings are over the locally ingested corpus. Epic exposes island metadata and per-island metrics, but not a global metric-sorted rankings endpoint. The crawler therefore keeps metadata discovery broad and metric refresh/backfill paced to avoid API rate limits. Longer history starts accruing after the backend has been running because Epic's public API history is short.

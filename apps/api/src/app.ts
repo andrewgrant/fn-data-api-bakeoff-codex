@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import type { Database } from "./db/database.js";
@@ -129,6 +131,17 @@ export function createApp(db: Database) {
       response.status(summary.status === "completed" ? 200 : 500).json(summary);
     })
   );
+
+  app.use("/api", (_request, response) => {
+    response.status(404).json({ error: "not_found" });
+  });
+
+  if (fs.existsSync(path.join(config.webDistPath, "index.html"))) {
+    app.use(express.static(config.webDistPath));
+    app.get(/^(?!\/api\/).*/, (_request, response) => {
+      response.sendFile(path.join(config.webDistPath, "index.html"));
+    });
+  }
 
   app.use(((_error, _request, response, _next) => {
     const error = _error instanceof Error ? _error : new Error(String(_error));

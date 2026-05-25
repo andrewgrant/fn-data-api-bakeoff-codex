@@ -15,6 +15,7 @@
     "dev:api": "npm run dev -w @island-intel/api",
     "dev:web": "npm run dev -w @island-intel/web",
     "build": "npm run build --workspaces",
+    "start": "npm run start -w @island-intel/api",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm test --workspaces",
     "ingest": "npm run ingest -w @island-intel/api --"
